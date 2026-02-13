@@ -1,3 +1,5 @@
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+
 export default function Home() {
   return (
     <div className="bg-zinc-50 font-sans dark:bg-black">
@@ -5,11 +7,25 @@ export default function Home() {
         <h1>Invoice Generator</h1>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <section className="rounded-xl border p-4">
-            Editor
+          <section aria-labelledby="editor-title">
+            <Card>
+              <CardHeader>
+                <CardTitle id="editor-title">Editor</CardTitle>
+              </CardHeader>
+              <CardContent>
+                Form
+              </CardContent>
+            </Card>
           </section>
-          <section className="rounded-xl border p-4">
-            Preview
+          <section aria-labelledby="preview-title">
+            <Card>
+              <CardHeader>
+                <CardTitle id="preview-title">Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                Preview Content
+              </CardContent>
+            </Card>
           </section>
         </div>
       </main>
