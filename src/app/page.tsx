@@ -8,6 +8,7 @@ import { formatRs } from "@/lib/format";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Home() {
   const [invoice, setInvoice] = useState<Invoice>({
@@ -143,6 +144,95 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
+
+                {/* Discount */}
+                <div className="border-t pt-4 space-y-3">
+                  {invoice.discount === null ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => 
+                        setInvoice((prev) => ({
+                          ...prev,
+                          discount: { type: "amount", value: 0 },
+                        }))
+                      }
+                    >
+                      Add discount
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">Discount</p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() =>
+                            setInvoice((prev) => ({
+                              ...prev,
+                              discount: null,
+                            }))
+                          }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>Type</Label>
+                          <Select
+                            value={invoice.discount.type}
+                            onValueChange={(val) => 
+                              setInvoice((prev) => ({
+                                ...prev,
+                                discount: {
+                                  type: val as "amount" | "percent",
+                                  value: prev.discount?.value ?? 0,
+                                },
+                              }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="amount">Rs.</SelectItem>
+                              <SelectItem value="percent">%</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Value</Label>
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            min={0}
+                            step={1}
+                            value={invoice.discount.value}
+                            onChange={(e) => {
+                              const n = Math.max(0, Math.floor(Number(e.target.value)));
+                              const discount = invoice.discount;
+
+                              if(!discount) return;
+
+                              const value = discount.type === "percent" ? Math.min(n, 100) : n; // Cap percentage at 100
+
+                                setInvoice((prev) => ({
+                                  ...prev,
+                                  discount: { ...discount, value },
+                                }));
+                            }}
+                          />
+                          {invoice.discount.type === "percent" && (
+                            <p className="text-xs text-muted-foreground">Max 100%</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </section>
