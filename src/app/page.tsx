@@ -241,11 +241,55 @@ export default function Home() {
               <CardHeader>
                 <CardTitle id="preview-title">Preview</CardTitle>
               </CardHeader>
-              <CardContent>
-                Description: {invoice.items[0].description} <br />
-                Subtotal: {formatRs(subtotal)} <br />
-                Discount: {formatRs(discountAmount)} <br />
-                Total: {formatRs(total)}
+              <CardContent className="space-y-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 text-left font-medium">Description</th>
+                      <th className="py-2 text-right font-medium">Qty</th>
+                      <th className="py-2 text-right font-medium">Unit Price</th>
+                      <th className="py-2 text-right font-medium">Amount</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {invoice.items.map((item) => {
+                      const lineTotal = item.quantity * item.unitPrice;
+
+                      return (
+                        <tr key={item.id} className="border-b align-top">
+                          <td className="py-2 pr-2">
+                            <div className="font-medium">{item.description || "—"}</div>
+                            <div className="text-xs text-muted-foreground">{item.size}</div>
+                          </td>
+
+                          <td className="py-2 text-right tabular-nums">{item.quantity}</td>
+                          <td className="py-2 text-right tabular-nums">{formatRs(item.unitPrice)}</td>
+                          <td className="py-2 text-right tabular-nums">{formatRs(lineTotal)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="tabular-nums">{formatRs(subtotal)}</span>
+                  </div>
+
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Discount</span>
+                      <span className="tabular-nums">- {formatRs(discountAmount)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between border-t pt-2 font-medium">
+                    <span>Total</span>
+                    <span className="tabular-nums">{formatRs(total)}</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </section>
