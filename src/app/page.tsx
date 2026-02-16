@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { Invoice } from "@/lib/invoice";
 import { calcTotal } from "@/lib/calc";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { validateForExport } from "@/lib/validate";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toPng } from "html-to-image";
 
 const PROFILE_KEY = "invoice-profile";
 
@@ -60,6 +61,8 @@ export default function Home() {
     }
   });
   const [exportErrors, setExportErrors] = useState<string[]>([]);
+
+  const invoiceRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -117,7 +120,7 @@ export default function Home() {
     })
   }
 
-  const runExport = (kind: "pdf" | "png") => {
+  const runExport = async (kind: "pdf" | "png") => {
     const errors = validateForExport(invoice);
 
     if (errors.length > 0) {
@@ -127,7 +130,28 @@ export default function Home() {
 
     setExportErrors([]);
 
-    console.log(`Exporting ${kind}...`);
+    if (kind === "png") {
+      const node = invoiceRef.current;
+      if (!node) return;
+
+      try {
+        const dataUrl = await toPng(node, {
+          pixelRatio: 2,
+          cacheBust: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const link = document.createElement("a");
+        link.download = `invoice-${invoice.date || "draft"}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.error(err);
+        setExportErrors(["PNG export failed. Please try again."]);
+      }
+
+      return;
+    }
   }
 
   return (
@@ -395,52 +419,54 @@ export default function Home() {
                   </Alert>
                 )}
 
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="py-2 text-left font-medium">Description</th>
-                      <th className="py-2 text-right font-medium">Qty</th>
-                      <th className="py-2 text-right font-medium">Unit Price</th>
-                      <th className="py-2 text-right font-medium">Amount</th>
-                    </tr>
-                  </thead>
+                <div ref={invoiceRef} className="bg-white p-6">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-2 text-left font-medium">Description</th>
+                        <th className="py-2 text-right font-medium">Qty</th>
+                        <th className="py-2 text-right font-medium">Unit Price</th>
+                        <th className="py-2 text-right font-medium">Amount</th>
+                      </tr>
+                    </thead>
 
-                  <tbody>
-                    {invoice.items.map((item) => {
-                      const lineTotal = item.quantity * item.unitPrice;
+                    <tbody>
+                      {invoice.items.map((item) => {
+                        const lineTotal = item.quantity * item.unitPrice;
 
-                      return (
-                        <tr key={item.id} className="border-b align-top">
-                          <td className="py-2 pr-2">
-                            <div className="font-medium">{item.description || "—"}</div>
-                            <div className="text-xs text-muted-foreground">{item.size}</div>
-                          </td>
+                        return (
+                          <tr key={item.id} className="border-b align-top">
+                            <td className="py-2 pr-2">
+                              <div className="font-medium">{item.description || "—"}</div>
+                              <div className="text-xs text-muted-foreground">{item.size}</div>
+                            </td>
 
-                          <td className="py-2 text-right tabular-nums">{item.quantity}</td>
-                          <td className="py-2 text-right tabular-nums">{formatRs(item.unitPrice)}</td>
-                          <td className="py-2 text-right tabular-nums">{formatRs(lineTotal)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            <td className="py-2 text-right tabular-nums">{item.quantity}</td>
+                            <td className="py-2 text-right tabular-nums">{formatRs(item.unitPrice)}</td>
+                            <td className="py-2 text-right tabular-nums">{formatRs(lineTotal)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
 
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="tabular-nums">{formatRs(subtotal)}</span>
-                  </div>
-
-                  {discountAmount > 0 && (
+                  <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Discount</span>
-                      <span className="tabular-nums">- {formatRs(discountAmount)}</span>
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="tabular-nums">{formatRs(subtotal)}</span>
                     </div>
-                  )}
 
-                  <div className="flex justify-between border-t pt-2 font-medium">
-                    <span>Total</span>
-                    <span className="tabular-nums">{formatRs(total)}</span>
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Discount</span>
+                        <span className="tabular-nums">- {formatRs(discountAmount)}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between border-t pt-2 font-medium">
+                      <span>Total</span>
+                      <span className="tabular-nums">{formatRs(total)}</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
