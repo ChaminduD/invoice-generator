@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { Invoice } from "@/lib/invoice";
 import { calcTotal } from "@/lib/calc";
@@ -9,28 +9,68 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+
+const PROFILE_KEY = "invoice-profile";
 
 export default function Home() {
-  const [invoice, setInvoice] = useState<Invoice>({
-    date: "2026-02-14",
-    items: [
-      {
-        id: crypto.randomUUID(),
-        description: "Sofa (Sample)",
-        size: "6ft",
-        quantity: 1,
-        unitPrice: 50000,
+  const [invoice, setInvoice] = useState<Invoice>(() => {
+    const defaults: Invoice ={
+      date: "2026-02-14",
+      items: [
+        {
+          id: crypto.randomUUID(),
+          description: "Sofa (Sample)",
+          size: "6ft",
+          quantity: 1,
+          unitPrice: 50000,
+        },
+      ],
+      discount: null,
+      showBankDetails: false,
+      bankDetails: {
+        name: "Sample Name",
+        accountNumber: "0000000000",
+        bank: "Sample Bank",
+        branch: "Sample Branch",
       },
-    ],
-    discount: null,
-    showBankDetails: false,
-    bankDetails: {
-      name: "Sample Name",
-      accountNumber: "0000000000",
-      bank: "Sample Bank",
-      branch: "Sample Branch",
-    },
+    };
+
+    //only runs in the browser
+    if (typeof window === "undefined") return defaults;
+
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if (!raw) return defaults;
+
+      const saved = JSON.parse(raw) as {
+        showBankDetails?: boolean;
+        bankDetails?: Partial<Invoice["bankDetails"]>;
+      };
+
+      return {
+        ...defaults,
+        showBankDetails: saved.showBankDetails ?? defaults.showBankDetails,
+        bankDetails: { ...defaults.bankDetails, ...(saved.bankDetails ?? {}) },
+      };
+    } catch {
+      return defaults;
+    }
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        PROFILE_KEY,
+        JSON.stringify({
+          showBankDetails: invoice.showBankDetails,
+          bankDetails: invoice.bankDetails,
+        })
+      );
+    } catch {
+      // ignore storage errors
+    }
+  }, [invoice.showBankDetails, invoice.bankDetails]);
 
   const { subtotal, discountAmount, total } = calcTotal(invoice.items, invoice.discount);
 
@@ -56,6 +96,15 @@ export default function Home() {
       return {...prev, items};
     });
   };
+
+  const updateBankDetails = (
+    patch: Partial<Invoice["bankDetails"]>
+  ) => {
+    setInvoice((prev) => ({
+      ...prev,
+      bankDetails: { ...prev.bankDetails, ...patch },
+    }));
+  }
 
   const removeItem = (index: number) => {
     setInvoice((prev) => {
@@ -229,6 +278,72 @@ export default function Home() {
                             <p className="text-xs text-muted-foreground">Max 100%</p>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bank details */}
+                <div className="border-t pt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Account Details</p>
+                      <p className="text-xs text-muted-foreground">
+                        Saved on this device
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="show-bank" className="text-sm">
+                        Show
+                      </Label>
+                      <Switch
+                        id="show-bank"
+                        checked={invoice.showBankDetails}
+                        onCheckedChange={(checked) => 
+                          setInvoice((prev) => ({ ...prev, showBankDetails: checked }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {invoice.showBankDetails && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="acc-name">Name</Label>
+                        <Input
+                          id="acc-name"
+                          value={invoice.bankDetails.name}
+                          onChange={(e) => updateBankDetails({ name: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="acc-number">Account number</Label>
+                        <Input
+                          id="acc-number"
+                          value={invoice.bankDetails.accountNumber}
+                          inputMode="numeric"
+                          onChange={(e) => updateBankDetails({ accountNumber: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="bank-name">Bank</Label>
+                        <Input
+                          id="bank-name"
+                          value={invoice.bankDetails.bank}
+                          onChange={(e) => updateBankDetails({ bank: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="bank-branch">Branch</Label>
+                        <Input
+                          id="bank-branch"
+                          value={invoice.bankDetails.branch}
+                          onChange={(e) => updateBankDetails({ branch: e.target.value })}
+                        />
                       </div>
                     </div>
                   )}
