@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { validateForExport } from "@/lib/validate";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const PROFILE_KEY = "invoice-profile";
 
@@ -57,6 +59,7 @@ export default function Home() {
       return defaults;
     }
   });
+  const [exportErrors, setExportErrors] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -112,6 +115,19 @@ export default function Home() {
       const items = prev.items.filter((_, i) => i !== index);
       return {...prev, items};
     })
+  }
+
+  const runExport = (kind: "pdf" | "png") => {
+    const errors = validateForExport(invoice);
+
+    if (errors.length > 0) {
+      setExportErrors(errors);
+      return;
+    }
+
+    setExportErrors([]);
+
+    console.log(`Exporting ${kind}...`);
   }
 
   return (
@@ -357,6 +373,28 @@ export default function Home() {
                 <CardTitle id="preview-title">Preview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" onClick={() => runExport("pdf")}>
+                    Download PDF
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => runExport("png")}>
+                    Download PNG
+                  </Button>
+                </div>
+
+                {exportErrors.length > 0 && (
+                  <Alert>
+                    <AlertTitle>Fix these before exporting</AlertTitle>
+                    <AlertDescription>
+                      <ul className="mt-2 list-disc space-y-1 pl-5">
+                        {exportErrors.map((msg) => (
+                          <li key={msg}>{msg}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
