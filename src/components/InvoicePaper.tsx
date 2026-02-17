@@ -6,7 +6,7 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
   const { subtotal, discountAmount, total } = calcTotal(invoice.items, invoice.discount);
 
   return (
-    <div className="w-[794px] min-h-[1123px] bg-white p-10 text-black">
+    <div className="w-[794px] min-h-[1123px] bg-white p-10 text-black flex flex-col">
       {/* Header */}
       <div className="flex items-start justify-between gap-6">
         {/* Left: Logo + Business contact */}
@@ -123,6 +123,14 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
             </table>
           </div>
         )}
+      </div>
+      
+      {/* Footer */}
+      <div className="mt-auto pt-8 text-xs text-black/60">
+        <div className="border-t border-black/10 pt-3 flex items-center justify-between">
+          <span>Thank you for your order.</span>
+          <span>{invoice.business.phone}</span>
+        </div>
       </div>
     </div>
   );
