@@ -253,8 +253,11 @@ export default function Home() {
   return (
     <div className="bg-zinc-50 font-sans dark:bg-black">
       <main className="min-h-dvh p-4">
-        <h1>Invoice Generator</h1>
-
+        <h1 className="text-2xl font-semibold tracking-tight">Invoice Generator</h1>
+        <p className="text-sm text-muted-foreground">
+          Create invoices and export as PDF or PNG.
+        </p>
+        
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <section aria-labelledby="editor-title">
             <Card>
@@ -324,7 +327,7 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor={`desc-${index}`}>Description</Label>
                       <Input
                         id={`desc-${index}`}
@@ -335,7 +338,7 @@ export default function Home() {
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor={`size-${index}`}>Size</Label>
                       <Input
                         id={`size-${index}`}
@@ -346,7 +349,7 @@ export default function Home() {
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor={`qty-${index}`}>Quantity</Label>
                       <Input
                         id={`qty-${index}`}
@@ -359,7 +362,7 @@ export default function Home() {
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor={`price-${index}`}>Price</Label>
                       <Input
                         id={`price-${index}`}

@@ -92,7 +92,7 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
             </div>
           )}
 
-          <div className="flex justify-between border-t border-black/20 pt-2 font-medium">
+          <div className="flex justify-between border-t border-black/20 pt-2 text-base font-semibold">
             <span>Total</span>
             <span className="tabular-nums">{formatRs(total)}</span>
           </div>
