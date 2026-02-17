@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { Invoice } from "@/lib/invoice";
-import { calcTotal } from "@/lib/calc";
-import { formatRs } from "@/lib/format";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +11,12 @@ import { Switch } from "@/components/ui/switch";
 import { validateForExport } from "@/lib/validate";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toPng } from "html-to-image";
+import { InvoicePaper } from "@/components/InvoicePaper";
 
-const PROFILE_KEY = "invoice-profile";
+const PROFILE_KEY = "invoice_profile_v1";
+const INVOICE_DRAFT_KEY = "invoice_draft_v1";
+const PAPER_W = 794;
+const PAPER_H = 1123;
 
 export default function Home() {
   const [invoice, setInvoice] = useState<Invoice>(() => {
@@ -36,6 +38,12 @@ export default function Home() {
         accountNumber: "0000000000",
         bank: "Sample Bank",
         branch: "Sample Branch",
+      },
+      business: {
+        name: "Sample Business",
+        phone: "123-456-7890",
+        email: "sample@example.com",
+        social: "@samplebusiness",
       },
     };
 
@@ -61,8 +69,10 @@ export default function Home() {
     }
   });
   const [exportErrors, setExportErrors] = useState<string[]>([]);
+  const [previewScale, setPreviewScale] = useState(1);
 
-  const invoiceRef = useRef<HTMLDivElement | null>(null);
+  const exportRef = useRef<HTMLDivElement | null>(null);
+  const previewWrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -78,7 +88,19 @@ export default function Home() {
     }
   }, [invoice.showBankDetails, invoice.bankDetails]);
 
-  const { subtotal, discountAmount, total } = calcTotal(invoice.items, invoice.discount);
+  useEffect(() => {
+    const el = previewWrapRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? PAPER_W;
+      const scale = Math.min(1, width / PAPER_W);
+      setPreviewScale(scale);
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const addItem = () => {
     const newItem = {
@@ -131,7 +153,7 @@ export default function Home() {
     setExportErrors([]);
 
     if (kind === "png") {
-      const node = invoiceRef.current;
+      const node = exportRef.current;
       if (!node) return;
 
       try {
@@ -150,6 +172,16 @@ export default function Home() {
         setExportErrors(["PNG export failed. Please try again."]);
       }
 
+      return;
+    }
+
+    if (kind === "pdf") {
+      try {
+        localStorage.setItem(INVOICE_DRAFT_KEY, JSON.stringify(invoice));
+        window.open("/print", "_blank", "noopener,noreferrer");
+      } catch {
+        setExportErrors(["PDF export failed. Please try again."]);
+      }
       return;
     }
   }
@@ -407,7 +439,7 @@ export default function Home() {
                 </div>
 
                 {exportErrors.length > 0 && (
-                  <Alert>
+                  <Alert variant="destructive">
                     <AlertTitle>Fix these before exporting</AlertTitle>
                     <AlertDescription>
                       <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -419,54 +451,25 @@ export default function Home() {
                   </Alert>
                 )}
 
-                <div ref={invoiceRef} className="bg-white p-6">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="py-2 text-left font-medium">Description</th>
-                        <th className="py-2 text-right font-medium">Qty</th>
-                        <th className="py-2 text-right font-medium">Unit Price</th>
-                        <th className="py-2 text-right font-medium">Amount</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {invoice.items.map((item) => {
-                        const lineTotal = item.quantity * item.unitPrice;
-
-                        return (
-                          <tr key={item.id} className="border-b align-top">
-                            <td className="py-2 pr-2">
-                              <div className="font-medium">{item.description || "—"}</div>
-                              <div className="text-xs text-muted-foreground">{item.size}</div>
-                            </td>
-
-                            <td className="py-2 text-right tabular-nums">{item.quantity}</td>
-                            <td className="py-2 text-right tabular-nums">{formatRs(item.unitPrice)}</td>
-                            <td className="py-2 text-right tabular-nums">{formatRs(lineTotal)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span className="tabular-nums">{formatRs(subtotal)}</span>
+                {/* Visible preview (auto-scaled to fit) */}
+                <div ref={previewWrapRef} className="w-full">
+                  <div
+                    className="relative overflow-hidden rounded-md bg-zinc-100"
+                    style={{ height: PAPER_H * previewScale }}
+                  >
+                    <div
+                      className="absolute left-1/2 top-0 origin-top"
+                      style={{ transform: `translateX(-50%) scale(${previewScale})` }}
+                    >
+                      <InvoicePaper invoice={invoice} />
                     </div>
+                  </div>
+                </div>
 
-                    {discountAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Discount</span>
-                        <span className="tabular-nums">- {formatRs(discountAmount)}</span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between border-t pt-2 font-medium">
-                      <span>Total</span>
-                      <span className="tabular-nums">{formatRs(total)}</span>
-                    </div>
+                {/* Hidden export canvas (always unscaled) */}
+                <div className="fixed left-[-99999px] top-0">
+                  <div ref={exportRef} className="inline-block bg-white">
+                    <InvoicePaper invoice={invoice} />
                   </div>
                 </div>
               </CardContent>

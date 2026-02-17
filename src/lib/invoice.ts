@@ -23,4 +23,12 @@ export type Invoice = {
   discount: Discount | null;
   showBankDetails: boolean;
   bankDetails: BankDetails;
+  business: BusinessProfile;
+};
+
+export type BusinessProfile = {
+  name: string;
+  phone: string;
+  email?: string;
+  social?: string;
 };
