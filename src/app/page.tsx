@@ -15,9 +15,28 @@ import { InvoicePaper } from "@/components/InvoicePaper";
 import { BUSINESS } from "@/config/business";
 
 const PROFILE_KEY = "invoice_profile_v1";
-const INVOICE_DRAFT_KEY = "invoice_draft_v1";
+const INVOICE_DRAFT_KEY = "invoice_draft_v1"; // autosave
+const INVOICE_PRINT_KEY = "invoice_print_v1"; // used only for /print
+const INVOICE_COUNTER_KEY = "invoice_counter_v1"; // for sequential numbers
 const PAPER_W = 794;
 const PAPER_H = 1123;
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function nextInvoiceNumber() {
+  // runs only in browser events
+  const year = new Date().getFullYear();
+  const raw = localStorage.getItem(INVOICE_COUNTER_KEY);
+  const current = raw ? Number(raw) : 0;
+  const next = current + 1;
+
+  localStorage.setItem(INVOICE_COUNTER_KEY, String(next));
+
+  // INV-2026-0001
+  return `INV-${year}-${String(next).padStart(4, "0")}`;
+}
 
 export default function Home() {
   const [invoice, setInvoice] = useState<Invoice>(() => {
@@ -49,19 +68,29 @@ export default function Home() {
     if (typeof window === "undefined") return defaults;
 
     try {
-      const raw = localStorage.getItem(PROFILE_KEY);
-      if (!raw) return defaults;
+      // Load profile (bank settings)
+      const rawProfile = localStorage.getItem(PROFILE_KEY);
+      const savedProfile = rawProfile
+        ? (JSON.parse(rawProfile) as {
+            showBankDetails?: boolean;
+            bankDetails?: Partial<Invoice["bankDetails"]>;
+          })
+        : null;
 
-      const saved = JSON.parse(raw) as {
-        showBankDetails?: boolean;
-        bankDetails?: Partial<Invoice["bankDetails"]>;
-      };
-
-      return {
+      const withProfile: Invoice = {
         ...defaults,
-        showBankDetails: saved.showBankDetails ?? defaults.showBankDetails,
-        bankDetails: { ...defaults.bankDetails, ...(saved.bankDetails ?? {}) },
+        showBankDetails: savedProfile?.showBankDetails ?? defaults.showBankDetails,
+        bankDetails: { ...defaults.bankDetails, ...(savedProfile?.bankDetails ?? {}) },
       };
+
+      // Load draft (full invoice)
+      const rawDraft = localStorage.getItem(INVOICE_DRAFT_KEY);
+      if (!rawDraft) return withProfile;
+
+      const draft = JSON.parse(rawDraft) as Invoice;
+
+      // Draft wins for editable fields, but keep safe base shape
+      return { ...withProfile, ...draft };
     } catch {
       return defaults;
     }
@@ -85,6 +114,14 @@ export default function Home() {
       // ignore storage errors
     }
   }, [invoice.showBankDetails, invoice.bankDetails]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(INVOICE_DRAFT_KEY, JSON.stringify(invoice));
+    } catch {
+      // ignore
+    }
+  }, [invoice]);
 
   useEffect(() => {
     const el = previewWrapRef.current;
@@ -175,7 +212,7 @@ export default function Home() {
 
     if (kind === "pdf") {
       try {
-        localStorage.setItem(INVOICE_DRAFT_KEY, JSON.stringify(invoice));
+        localStorage.setItem(INVOICE_PRINT_KEY, JSON.stringify(invoice));
         window.open("/print", "_blank", "noopener,noreferrer");
       } catch {
         setExportErrors(["PDF export failed. Please try again."]);
@@ -183,6 +220,34 @@ export default function Home() {
       return;
     }
   }
+
+  const newInvoice = () => {
+    setExportErrors([]);
+
+    const newNo = nextInvoiceNumber();   // side effect happens once
+    const newDate = todayISO();
+
+    setInvoice((prev) => ({
+      ...prev,
+      invoiceNumber: newNo,
+      date: newDate,
+      customerName: "",
+      items: [
+        {
+          id: crypto.randomUUID(),
+          description: "",
+          size: "",
+          quantity: 1,
+          unitPrice: 0,
+        },
+      ],
+      discount: null,
+      // keep saved profile
+      showBankDetails: prev.showBankDetails,
+      bankDetails: prev.bankDetails,
+      business: prev.business,
+    }));
+  };
 
   return (
     <div className="bg-zinc-50 font-sans dark:bg-black">
@@ -194,9 +259,14 @@ export default function Home() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle id="editor-title">Editor</CardTitle>
-                <Button type="button" onClick={addItem}>
-                  Add item
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="button" onClick={addItem}>
+                    Add item
+                  </Button>
+                  <Button type="button" variant="outline" onClick={newInvoice}>
+                    New invoice
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Invoice meta */}

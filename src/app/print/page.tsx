@@ -4,12 +4,12 @@ import { useEffect, useMemo } from "react";
 import type { Invoice } from "@/lib/invoice";
 import { InvoicePaper } from "@/components/InvoicePaper";
 
-const INVOICE_DRAFT_KEY = "invoice_draft_v1";
+const INVOICE_PRINT_KEY = "invoice_print_v1";
 
 export default function PrintPage() {
     const invoice = useMemo<Invoice | null>(() => {
         try {
-            const raw = localStorage.getItem(INVOICE_DRAFT_KEY);
+            const raw = localStorage.getItem(INVOICE_PRINT_KEY);
             if (!raw) return null;
             return JSON.parse(raw) as Invoice;
         } catch {
