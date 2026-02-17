@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toPng } from "html-to-image";
 import { InvoicePaper } from "@/components/InvoicePaper";
 import { BUSINESS } from "@/config/business";
+import { formatRs } from "@/lib/format";
 
 const PROFILE_KEY = "invoice_profile_v1";
 const INVOICE_DRAFT_KEY = "invoice_draft_v1"; // autosave
@@ -370,6 +371,10 @@ export default function Home() {
                         onChange={(e) => updateItem(index, { unitPrice: Math.max(0, Math.floor(Number(e.target.value))) })}
                       />
                     </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      Line total: <span className="tabular-nums">{formatRs(item.quantity * item.unitPrice)}</span>
+                    </p>
                   </div>
                 ))}
 
@@ -548,6 +553,7 @@ export default function Home() {
                     Download PNG
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">For a clean PDF, disable ‘Headers and footers’ in the print dialog.</p>
 
                 {exportErrors.length > 0 && (
                   <Alert variant="destructive">
