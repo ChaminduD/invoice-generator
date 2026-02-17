@@ -16,7 +16,6 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
             LOGO
           </div>
 
-
           {/* Minimal contact (recommended) */}
           <div className="text-sm leading-5">
             <div className="font-medium">{invoice.business.name}</div>

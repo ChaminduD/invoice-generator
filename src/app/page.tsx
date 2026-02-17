@@ -12,6 +12,7 @@ import { validateForExport } from "@/lib/validate";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toPng } from "html-to-image";
 import { InvoicePaper } from "@/components/InvoicePaper";
+import { BUSINESS } from "@/config/business";
 
 const PROFILE_KEY = "invoice_profile_v1";
 const INVOICE_DRAFT_KEY = "invoice_draft_v1";
@@ -39,12 +40,7 @@ export default function Home() {
         bank: "Sample Bank",
         branch: "Sample Branch",
       },
-      business: {
-        name: "Sample Business",
-        phone: "123-456-7890",
-        email: "sample@example.com",
-        social: "@samplebusiness",
-      },
+      business: BUSINESS,
     };
 
     //only runs in the browser
