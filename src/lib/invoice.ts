@@ -24,6 +24,8 @@ export type Invoice = {
   showBankDetails: boolean;
   bankDetails: BankDetails;
   business: BusinessProfile;
+  invoiceNumber: string;
+  customerName: string;
 };
 
 export type BusinessProfile = {

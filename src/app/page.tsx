@@ -22,25 +22,27 @@ const PAPER_H = 1123;
 export default function Home() {
   const [invoice, setInvoice] = useState<Invoice>(() => {
     const defaults: Invoice ={
-      date: "2026-02-14",
+      date: new Date().toISOString().slice(0, 10),
       items: [
         {
           id: crypto.randomUUID(),
-          description: "Sofa (Sample)",
-          size: "6ft",
+          description: "",
+          size: "",
           quantity: 1,
-          unitPrice: 50000,
+          unitPrice: 0,
         },
       ],
       discount: null,
       showBankDetails: false,
       bankDetails: {
-        name: "Sample Name",
-        accountNumber: "0000000000",
-        bank: "Sample Bank",
-        branch: "Sample Branch",
+        name: "",
+        accountNumber: "",
+        bank: "",
+        branch: "",
       },
       business: BUSINESS,
+      invoiceNumber: "INV-001",
+      customerName: "",
     };
 
     //only runs in the browser
@@ -197,6 +199,43 @@ export default function Home() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Invoice meta */}
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="inv-no">Invoice No</Label>
+                    <Input
+                      id="inv-no"
+                      value={invoice.invoiceNumber}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="inv-date">Date</Label>
+                    <Input
+                      id="inv-date"
+                      type="date"
+                      value={invoice.date}
+                      onChange={(e) =>
+                        setInvoice((prev) => ({ ...prev, date: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-3">
+                    <Label htmlFor="customer-name">Customer Name</Label>
+                    <Input
+                      id="customer-name"
+                      value={invoice.customerName}
+                      onChange={(e) =>
+                        setInvoice((prev) => ({ ...prev, customerName: e.target.value }))
+                      }
+                      placeholder="e.g. John Doe"
+                    />
+                  </div>
+                </div>
+
+                {/* Items */}
                 {invoice.items.map((item, index) => (
                   <div key={item.id} className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -221,6 +260,7 @@ export default function Home() {
                         type="text"
                         value={item.description}
                         onChange={(e) => updateItem(index, { description: e.target.value })}
+                        placeholder="e.g. Sofa"
                       />
                     </div>
 
@@ -231,6 +271,7 @@ export default function Home() {
                         type="text"
                         value={item.size}
                         onChange={(e) => updateItem(index, { size: e.target.value })}
+                        placeholder="e.g. 6ft"
                       />
                     </div>
 
@@ -383,6 +424,7 @@ export default function Home() {
                           id="acc-name"
                           value={invoice.bankDetails.name}
                           onChange={(e) => updateBankDetails({ name: e.target.value })}
+                          placeholder="e.g. A. Smith"
                         />
                       </div>
 
@@ -393,6 +435,7 @@ export default function Home() {
                           value={invoice.bankDetails.accountNumber}
                           inputMode="numeric"
                           onChange={(e) => updateBankDetails({ accountNumber: e.target.value })}
+                          placeholder="e.g. 0123456789"
                         />
                       </div>
 
@@ -402,6 +445,7 @@ export default function Home() {
                           id="bank-name"
                           value={invoice.bankDetails.bank}
                           onChange={(e) => updateBankDetails({ bank: e.target.value })}
+                          placeholder="e.g. Lanka Bank"
                         />
                       </div>
 
@@ -411,6 +455,7 @@ export default function Home() {
                           id="bank-branch"
                           value={invoice.bankDetails.branch}
                           onChange={(e) => updateBankDetails({ branch: e.target.value })}
+                          placeholder="e.g. Maharagama"
                         />
                       </div>
                     </div>

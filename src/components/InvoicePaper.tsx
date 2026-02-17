@@ -11,10 +11,11 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
       <div className="flex items-start justify-between gap-6">
         {/* Left: Logo + Business contact */}
         <div className="space-y-2">
-          {/* <img src="/logo.png" alt="Logo" className="h-12 w-auto object-contain" /> */}
-          <div className="h-12 w-32 border border-black/20 flex items-center justify-center text-xs text-black/60">
-            LOGO
-          </div>
+          <img
+            src="/logo.png"
+            alt={`${invoice.business.name} logo`}
+            className="h-12 w-auto object-contain"
+          />
 
           {/* Minimal contact (recommended) */}
           <div className="text-sm leading-5">
@@ -28,7 +29,22 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
         {/* Right: Title + Date */}
         <div className="text-right">
           <h1 className="text-2xl font-semibold tracking-tight">INVOICE</h1>
-          <div className="mt-1 text-sm">Date: {invoice.date}</div>
+          <div className="mt-2 space-y-1 text-sm">
+            <div>
+              <span className="text-black/70">Invoice No: </span>
+              <span className="font-medium">{invoice.invoiceNumber}</span>
+            </div>
+            <div>
+              <span className="text-black/70">Date: </span>
+              <span>{invoice.date}</span>
+            </div>
+            {invoice.customerName ? (
+              <div>
+                <span className="text-black/70">Bill To: </span>
+                <span>{invoice.customerName}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
