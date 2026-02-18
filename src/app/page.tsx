@@ -26,17 +26,44 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function nextInvoiceNumber() {
-  // runs only in browser events
-  const year = new Date().getFullYear();
-  const raw = localStorage.getItem(INVOICE_COUNTER_KEY);
-  const current = raw ? Number(raw) : 0;
-  const next = current + 1;
+function invoiceYear(dateISO: string) {
+  const y = Number((dateISO || todayISO()).slice(0, 4));
+  return Number.isFinite(y) ? y : new Date().getFullYear();
+}
 
-  localStorage.setItem(INVOICE_COUNTER_KEY, String(next));
+function pad4(n: number) {
+  return String(Math.min(Math.max(Math.floor(n), 0), 9999)).padStart(4, "0");
+}
 
-  // INV-2026-0001
-  return `INV-${year}-${String(next).padStart(4, "0")}`;
+function counterKey(year: number) {
+  return `${INVOICE_COUNTER_KEY}:${year}`;
+}
+
+// reads last-used for that year
+function readCounter(year: number) {
+  const raw = localStorage.getItem(counterKey(year));
+  const n = raw ? Number(raw) : 0;
+  return Number.isFinite(n) ? n : 0;
+}
+
+// writes last-used for that year
+function writeCounter(year: number, lastUsed: number) {
+  localStorage.setItem(counterKey(year), String(Math.min(Math.max(Math.floor(lastUsed), 0), 9999)));
+}
+
+function extractSeq(invoiceNo: string) {
+  const m = invoiceNo.match(/(\d{1,4})$/);
+  return m ? Number(m[1]) : 0;
+}
+
+function formatInvoiceNo(year: number, seq: number) {
+  return `INV-${year}-${pad4(seq)}`;
+}
+
+function nextInvoiceNumber(year: number) {
+  const next = readCounter(year) + 1;
+  writeCounter(year, next);
+  return formatInvoiceNo(year, next);
 }
 
 export default function Home() {
@@ -61,7 +88,7 @@ export default function Home() {
         branch: "",
       },
       business: BUSINESS,
-      invoiceNumber: "INV-001",
+      invoiceNumber: `INV-${new Date().getFullYear()}-0001`,
       customerName: "",
     };
 
@@ -98,6 +125,8 @@ export default function Home() {
   });
   const [exportErrors, setExportErrors] = useState<string[]>([]);
   const [previewScale, setPreviewScale] = useState(1);
+  const [invSeqDraft, setInvSeqDraft] = useState(""); // what user is typing (0–4 digits)
+  const [invSeqEditing, setInvSeqEditing] = useState(false);
 
   const exportRef = useRef<HTMLDivElement | null>(null);
   const previewWrapRef = useRef<HTMLDivElement | null>(null);
@@ -222,10 +251,43 @@ export default function Home() {
     }
   }
 
+  const commitInvSeq = () => {
+    const year = invoiceYear(invoice.date);
+
+    // if user hasn't typed anything, just exit edit mode
+    if (!invSeqEditing) return;
+
+    const digits = invSeqDraft.replace(/\D/g, "").slice(0, 4);
+    if (!digits) {
+      setInvSeqEditing(false);
+      setInvSeqDraft("");
+      return;
+    }
+
+    const padded = digits.padStart(4, "0");
+    const n = Number(padded);
+
+    try {
+      writeCounter(year, n); // allow backwards too (your rule)
+    } catch {}
+
+    setInvoice((prev) => ({ ...prev, invoiceNumber: formatInvoiceNo(year, n) }));
+    setInvSeqEditing(false);
+    setInvSeqDraft("");
+  };
+
   const newInvoice = () => {
+    commitInvSeq();
     setExportErrors([]);
 
-    const newNo = nextInvoiceNumber();   // side effect happens once
+    const year = invoiceYear(invoice.date);
+
+    // sync counter from the CURRENT invoice number (so next continues from it)
+    try {
+      writeCounter(year, extractSeq(invoice.invoiceNumber));
+    } catch {}
+
+    const newNo = nextInvoiceNumber(year);
     const newDate = todayISO();
 
     setInvoice((prev) => ({
@@ -277,11 +339,43 @@ export default function Home() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="inv-no">Invoice No</Label>
-                    <Input
-                      id="inv-no"
-                      value={invoice.invoiceNumber}
-                      readOnly
-                    />
+                    {(() => {
+                      const year = invoiceYear(invoice.date);
+                      const currentSeqPadded = pad4(extractSeq(invoice.invoiceNumber));
+
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">{`INV-${year}-`}</span>
+
+                          <Input
+                            id="inv-no"
+                            className="w-24 tabular-nums"
+                            inputMode="numeric"
+                            maxLength={4}
+                            placeholder="0001"
+                            value={invSeqEditing ? invSeqDraft : currentSeqPadded}
+                            onFocus={() => {
+                              setInvSeqEditing(true);
+                              // start editing without leading zeros (easier)
+                              setInvSeqDraft(String(extractSeq(invoice.invoiceNumber)));
+                            }}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                              setInvSeqDraft(digits);
+                            }}
+                            onBlur={commitInvSeq}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                commitInvSeq();
+                                // optional: remove focus so it feels “saved”
+                                (e.currentTarget as HTMLInputElement).blur();
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div className="space-y-2">
@@ -291,7 +385,16 @@ export default function Home() {
                       type="date"
                       value={invoice.date}
                       onChange={(e) =>
-                        setInvoice((prev) => ({ ...prev, date: e.target.value }))
+                        setInvoice((prev) => {
+                          const newDate = e.target.value;
+                          const newYear = invoiceYear(newDate);
+                          const seq = extractSeq(prev.invoiceNumber);
+                          return {
+                            ...prev,
+                            date: newDate,
+                            invoiceNumber: formatInvoiceNo(newYear, seq),
+                          };
+                        })
                       }
                     />
                   </div>
