@@ -94,16 +94,16 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
             </div>
           )}
 
-          <div className="flex justify-between border-t border-black/20 pt-2 text-base font-semibold">
+          <div className="flex justify-between border-t border-black/20 pt-2 text-lg font-semibold">
             <span>Total</span>
             <span className="tabular-nums">{formatRs(total)}</span>
           </div>
         </div>
 
         {invoice.showTotalInWords && (
-            <div className="mt-6 text-sm">
+            <div className="mt-3 rounded-md bg-zinc-50 px-3 py-2 text-xs text-black/70">
               <span className="font-medium">Total in words: </span>
-              <span className="capitalize">{totalToWordsRs(total)}</span>
+              <span className="capitalize text-black">{totalToWordsRs(total)}</span>
             </div>
           )}
 
@@ -112,9 +112,9 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
           <div className="mt-10">
             <h2 className="text-sm font-semibold">Account Details</h2>
 
-            <table className="mt-2 w-full text-sm">
+            <table className="mt-2 w-full text-sm text-black/70">
               <thead>
-                <tr className="border-b border-black/20">
+                <tr className="border-b border-black/20 text-black">
                   <th className="py-2 text-left font-medium">Name</th>
                   <th className="py-2 text-left font-medium">Account Number</th>
                   <th className="py-2 text-left font-medium">Bank</th>

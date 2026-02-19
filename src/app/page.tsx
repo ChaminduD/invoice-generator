@@ -440,53 +440,56 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`desc-${index}`}>Description</Label>
-                      <Input
-                        id={`desc-${index}`}
-                        type="text"
-                        value={item.description}
-                        onChange={(e) => updateItem(index, { description: e.target.value })}
-                        placeholder="e.g. Sofa"
-                      />
-                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor={`desc-${index}`}>Description</Label>
+                        <Input
+                          id={`desc-${index}`}
+                          type="text"
+                          value={item.description}
+                          onChange={(e) => updateItem(index, { description: e.target.value })}
+                          placeholder="e.g. Sofa"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`size-${index}`}>Size</Label>
-                      <Input
-                        id={`size-${index}`}
-                        type="text"
-                        value={item.size}
-                        onChange={(e) => updateItem(index, { size: e.target.value })}
-                        placeholder="e.g. 6ft"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`size-${index}`}>Size</Label>
+                        <Input
+                          id={`size-${index}`}
+                          type="text"
+                          value={item.size}
+                          onChange={(e) => updateItem(index, { size: e.target.value })}
+                          placeholder="e.g. 6ft"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`qty-${index}`}>Quantity</Label>
-                      <Input
-                        id={`qty-${index}`}
-                        type="number"
-                        value={item.quantity}
-                        min={1}
-                        step={1}
-                        inputMode="numeric"
-                        onChange={(e) => updateItem(index, { quantity: Math.max(1, Math.floor(Number(e.target.value))) })}
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`qty-${index}`}>Quantity</Label>
+                        <Input
+                          id={`qty-${index}`}
+                          type="number"
+                          value={item.quantity}
+                          min={1}
+                          step={1}
+                          inputMode="numeric"
+                          onChange={(e) => updateItem(index, { quantity: Math.max(1, Math.floor(Number(e.target.value))) })}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`price-${index}`}>Price</Label>
-                      <Input
-                        id={`price-${index}`}
-                        type="number"
-                        value={item.unitPrice}
-                        min={0}
-                        step={1}
-                        inputMode="numeric"
-                        onChange={(e) => updateItem(index, { unitPrice: Math.max(0, Math.floor(Number(e.target.value))) })}
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor={`price-${index}`}>Price</Label>
+                        <Input
+                          id={`price-${index}`}
+                          type="number"
+                          value={item.unitPrice}
+                          min={0}
+                          step={1}
+                          inputMode="numeric"
+                          onChange={(e) => updateItem(index, { unitPrice: Math.max(0, Math.floor(Number(e.target.value))) })}
+                        />
+                      </div>
                     </div>
+                    
 
                     <p className="text-sm text-muted-foreground">
                       Line total: <span className="tabular-nums">{formatRs(item.quantity * item.unitPrice)}</span>
@@ -745,14 +748,14 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
-                {/* Hidden export canvas (always unscaled) */}
-                <div className="fixed left-[-99999px] top-0">
-                  <div ref={exportRef} className="inline-block bg-white">
-                    <InvoicePaper invoice={invoice} />
-                  </div>
-                </div>
               </CardContent>
+
+              {/* Hidden export canvas (always unscaled) */}
+              <div className="fixed left-[-99999px] top-0">
+                <div ref={exportRef} className="inline-block bg-white">
+                  <InvoicePaper invoice={invoice} />
+                </div>
+              </div>
             </Card>
           </section>
         </div>
