@@ -1,6 +1,7 @@
 import type { Invoice } from "@/lib/invoice";
 import { calcTotal } from "@/lib/calc";
 import { formatRs } from "@/lib/format";
+import { totalToWordsRs } from "@/lib/total-words";
 
 export function InvoicePaper({ invoice }: { invoice: Invoice }) {
   const { subtotal, discountAmount, total } = calcTotal(invoice.items, invoice.discount);
@@ -97,6 +98,13 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
             <span className="tabular-nums">{formatRs(total)}</span>
           </div>
         </div>
+
+        {invoice.showTotalInWords && (
+            <div className="mt-6 text-sm">
+              <span className="font-medium">Total in words: </span>
+              <span className="capitalize">{totalToWordsRs(total)}</span>
+            </div>
+          )}
 
         {/* Account Details table (only if enabled) */}
         {invoice.showBankDetails && (

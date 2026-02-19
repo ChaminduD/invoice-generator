@@ -26,6 +26,7 @@ export type Invoice = {
   business: BusinessProfile;
   invoiceNumber: string;
   customerName: string;
+  showTotalInWords: boolean;
 };
 
 export type BusinessProfile = {

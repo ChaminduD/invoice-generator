@@ -90,6 +90,7 @@ export default function Home() {
       business: BUSINESS,
       invoiceNumber: `INV-${new Date().getFullYear()}-0001`,
       customerName: "",
+      showTotalInWords: false,
     };
 
     //only runs in the browser
@@ -571,6 +572,21 @@ export default function Home() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Total in words */}
+                <div className="flex items-center justify-between border-t pt-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Total in words</p>
+                    <p className="text-xs text-muted-foreground">Adds “… Rupees Only” to the invoice</p>
+                  </div>
+
+                  <Switch
+                    checked={invoice.showTotalInWords}
+                    onCheckedChange={(checked) =>
+                      setInvoice((prev) => ({ ...prev, showTotalInWords: checked }))
+                    }
+                  />
                 </div>
 
                 {/* Bank details */}
