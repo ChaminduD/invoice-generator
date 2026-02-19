@@ -48,6 +48,7 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
           </div>
         </div>
       </div>
+      <div className="mt-4 h-1 w-full rounded bg-primary" />
 
       {/* Items table */}
       <div className="mt-8">
@@ -135,9 +136,8 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
       
       {/* Footer */}
       <div className="mt-auto pt-8 text-xs text-black/60">
-        <div className="border-t border-black/10 pt-3 flex items-center justify-between">
-          <span>Thank you for your order.</span>
-          <span>{invoice.business.phone}</span>
+        <div className="border-t border-black/10 pt-3 text-center">
+          Thank you for your order!
         </div>
       </div>
     </div>

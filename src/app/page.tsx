@@ -420,7 +420,7 @@ export default function Home() {
                   <div key={item.id} className="space-y-3 border p-4 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="h-4 w-1 rounded bg-zinc-300" />
+                        <span className="h-4 w-1 rounded bg-primary/30" />
                         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                           Item {index + 1}
                         </p>
@@ -431,7 +431,7 @@ export default function Home() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => removeItem(index)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -516,7 +516,7 @@ export default function Home() {
                         <Button
                           type="button"
                           variant="ghost"
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => setInvoice((prev) => ({ ...prev, discount: null }))}
                         >
                           Remove discount
@@ -732,7 +732,7 @@ export default function Home() {
                 )}
 
                 {/* Visible preview (auto-scaled to fit) */}
-                <div ref={previewWrapRef} className="w-full">
+                <div ref={previewWrapRef} className="w-full border">
                   <div
                     className="relative overflow-hidden rounded-md bg-zinc-100"
                     style={{ height: PAPER_H * previewScale }}
