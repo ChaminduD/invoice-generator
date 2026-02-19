@@ -419,7 +419,12 @@ export default function Home() {
                 {invoice.items.map((item, index) => (
                   <div key={item.id} className="space-y-3 border p-4 rounded-lg">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">Item {index + 1}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="h-4 w-1 rounded bg-zinc-300" />
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Item {index + 1}
+                        </p>
+                      </div>
 
                       {invoice.items.length > 1 && (
                         <Button
