@@ -14,6 +14,7 @@ import { toPng } from "html-to-image";
 import { InvoicePaper } from "@/components/InvoicePaper";
 import { BUSINESS } from "@/config/business";
 import { formatRs } from "@/lib/format";
+import { Trash2 } from "lucide-react";
 
 const PROFILE_KEY = "invoice_profile_v1";
 const INVOICE_DRAFT_KEY = "invoice_draft_v1"; // autosave
@@ -131,6 +132,7 @@ export default function Home() {
 
   const exportRef = useRef<HTMLDivElement | null>(null);
   const previewWrapRef = useRef<HTMLDivElement | null>(null);
+  const discountTypeTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
@@ -330,7 +332,7 @@ export default function Home() {
                   <Button type="button" onClick={addItem}>
                     Add item
                   </Button>
-                  <Button type="button" variant="outline" onClick={newInvoice}>
+                  <Button type="button" variant="secondary" onClick={newInvoice}>
                     New invoice
                   </Button>
                 </div>
@@ -415,18 +417,20 @@ export default function Home() {
 
                 {/* Items */}
                 {invoice.items.map((item, index) => (
-                  <div key={item.id} className="space-y-3">
+                  <div key={item.id} className="space-y-3 border p-4 rounded-lg">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">Item {index + 1}</p>
 
                       {invoice.items.length > 1 && (
                         <Button
                           type="button"
-                          variant="destructive"
+                          variant="ghost"
                           size="sm"
+                          className="text-destructive hover:text-destructive"
                           onClick={() => removeItem(index)}
                         >
-                          Remove
+                          <Trash2 className="h-4 w-4" />
+                          Remove item
                         </Button>
                       )}
                     </div>
@@ -507,23 +511,43 @@ export default function Home() {
                         <Button
                           type="button"
                           variant="ghost"
-                          onClick={() =>
-                            setInvoice((prev) => ({
-                              ...prev,
-                              discount: null,
-                            }))
-                          }
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setInvoice((prev) => ({ ...prev, discount: null }))}
                         >
-                          Remove
+                          Remove discount
                         </Button>
                       </div>
 
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label>Type</Label>
+                          <Label
+                            id="discount-type-label"
+                            className="cursor-pointer"
+                            onPointerDown={(e) => {
+                              e.preventDefault();
+                              const el = discountTypeTriggerRef.current;
+                              if (!el) return;
+
+                              el.focus();
+
+                              try {
+                                el.dispatchEvent(
+                                  new PointerEvent("pointerdown", {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    pointerType: "mouse",
+                                  })
+                                );
+                              } catch {
+                                el.click();
+                              }
+                            }}
+                          >
+                            Type
+                          </Label>
                           <Select
                             value={invoice.discount.type}
-                            onValueChange={(val) => 
+                            onValueChange={(val) =>
                               setInvoice((prev) => ({
                                 ...prev,
                                 discount: {
@@ -533,9 +557,14 @@ export default function Home() {
                               }))
                             }
                           >
-                            <SelectTrigger>
+                            <SelectTrigger
+                              ref={discountTypeTriggerRef}
+                              id="discount-type"
+                              aria-labelledby="discount-type-label"
+                            >
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
+
                             <SelectContent>
                               <SelectItem value="amount">Rs.</SelectItem>
                               <SelectItem value="percent">%</SelectItem>
@@ -544,8 +573,9 @@ export default function Home() {
                         </div>
                         
                         <div className="space-y-2">
-                          <Label>Value</Label>
+                          <Label htmlFor="discount-value">Value</Label>
                           <Input
+                            id="discount-value"
                             type="number"
                             inputMode="numeric"
                             min={0}
@@ -581,12 +611,18 @@ export default function Home() {
                     <p className="text-xs text-muted-foreground">Adds “… Rupees Only” to the invoice</p>
                   </div>
 
-                  <Switch
-                    checked={invoice.showTotalInWords}
-                    onCheckedChange={(checked) =>
-                      setInvoice((prev) => ({ ...prev, showTotalInWords: checked }))
-                    }
-                  />
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="show-words" className="text-sm">
+                      Show
+                    </Label>
+                    <Switch
+                      id="show-words"
+                      checked={invoice.showTotalInWords}
+                      onCheckedChange={(checked) =>
+                        setInvoice((prev) => ({ ...prev, showTotalInWords: checked }))
+                      }
+                    />
+                  </div>
                 </div>
 
                 {/* Bank details */}
@@ -671,7 +707,7 @@ export default function Home() {
                   <Button type="button" onClick={() => runExport("pdf")}>
                     Download PDF
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => runExport("png")}>
+                  <Button type="button" variant="secondary" onClick={() => runExport("png")}>
                     Download PNG
                   </Button>
                 </div>
