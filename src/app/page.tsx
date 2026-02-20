@@ -760,6 +760,20 @@ export default function Home() {
           </section>
         </div>
       </main>
+      
+      <footer className="m-4 mt-0 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <span>Your data is saved locally in this browser.</span>
+        <span className="text-foreground">Built by
+          <a
+            className="underline underline-offset-4 hover:text-ring font-medium ml-1"
+            href="https://github.com/ChaminduD"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Chamindu Dahanayaka
+          </a>
+        </span>
+      </footer>
     </div>
   );
 }
