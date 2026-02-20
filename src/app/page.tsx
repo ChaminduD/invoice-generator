@@ -89,7 +89,7 @@ export default function Home() {
         branch: "",
       },
       business: BUSINESS,
-      invoiceNumber: `INV-${new Date().getFullYear()}-0001`,
+      invoiceNumber: `INV-${new Date().getFullYear()}-1001`,
       customerName: "",
       showTotalInWords: false,
     };

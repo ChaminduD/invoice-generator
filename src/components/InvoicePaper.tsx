@@ -18,12 +18,24 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
             className="h-12 w-auto object-contain"
           />
 
-          {/* Minimal contact (recommended) */}
+          {/* Contact info */}
           <div className="text-sm leading-5">
             <div className="font-medium">{invoice.business.name}</div>
-            <div>{invoice.business.phone}</div>
-            {invoice.business.email ? <div>{invoice.business.email}</div> : null}
-            {invoice.business.social ? <div>{invoice.business.social}</div> : null}
+            <div>
+              <span className="text-black/70">Call/WhatsApp: </span>
+              <span>{invoice.business.phone}</span>
+            </div>
+            
+            {invoice.business.email ?
+              <div>
+                <span className="text-black/70">Email: </span>
+                <span>{invoice.business.email}</span>
+              </div> : null}
+            {invoice.business.social ?
+              <div>
+                <span className="text-black/70">FB | IG | TikTok | YT: </span>
+                <span>{invoice.business.social}</span>
+              </div> : null}
           </div>
         </div>
 
@@ -137,7 +149,7 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
       {/* Footer */}
       <div className="mt-auto pt-8 text-xs text-black/60">
         <div className="border-t border-black/10 pt-3 text-center">
-          Thank you for your order!
+          Thank you for choosing Greenwood Furniture!
         </div>
       </div>
     </div>
