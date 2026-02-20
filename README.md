@@ -21,7 +21,7 @@ A mobile-first invoice generator built for small businesses. Create an invoice w
 
 ## Screenshot
 
-![Invoice Generator Preview](public/screenshots/preview.png)
+![Invoice Generator Preview](public/screenshots/preview.jpeg)
 
 ## Tech Stack
 
