@@ -2,6 +2,10 @@
 
 A mobile-first invoice generator built for small businesses. Create an invoice with line items, optional discount, optional bank details, and export as **A4 PDF** or **PNG**.
 
+**Live Demo:**
+
+[https://a4-invoice-generator.vercel.app/](https://a4-invoice-generator.vercel.app/)
+
 ## Features
 
 - Live A4 preview (consistent across devices)
@@ -14,6 +18,10 @@ A mobile-first invoice generator built for small businesses. Create an invoice w
 - Export:
   - **PNG** download
   - **PDF** via print view (`/print`) for clean A4 output
+
+## Screenshot
+
+![Invoice Generator Preview](public/screenshots/preview.png)
 
 ## Tech Stack
 
