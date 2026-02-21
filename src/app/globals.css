@@ -143,3 +143,5 @@
     print-color-adjust: exact;
   }
 }
+
+input[type="date"] { cursor: pointer; }

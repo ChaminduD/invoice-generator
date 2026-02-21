@@ -6,6 +6,21 @@ import { InvoicePaper } from "@/components/InvoicePaper";
 
 const INVOICE_PRINT_KEY = "invoice_print_v1";
 
+function slugify(s: string) {
+  return s
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-_]/g, "")
+    .slice(0, 30);
+}
+
+function pdfTitle(invoice: Invoice) {
+  const parts = [invoice.invoiceNumber, invoice.date || "draft"];
+  const customer = slugify(invoice.customerName || "");
+  if (customer) parts.push(customer);
+  return parts.join("_");
+}
+
 export default function PrintPage() {
     const invoice = useMemo<Invoice | null>(() => {
         try {
@@ -18,7 +33,7 @@ export default function PrintPage() {
     }, []);
 
     useEffect(() => {
-        if (invoice) document.title = `Invoice ${invoice.date}`;
+        if (invoice) document.title = pdfTitle(invoice);
     }, [invoice]);
 
     useEffect(() => {

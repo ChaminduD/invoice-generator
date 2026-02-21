@@ -67,6 +67,26 @@ function nextInvoiceNumber(year: number) {
   return formatInvoiceNo(year, next);
 }
 
+function slugify(s: string) {
+  return s
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-_]/g, "")
+    .slice(0, 30);
+}
+
+function buildFileName(invoice: Invoice, ext: "png" | "pdf") {
+  const parts = [
+    invoice.invoiceNumber,
+    invoice.date || "draft",
+  ];
+
+  const customer = slugify(invoice.customerName || "");
+  if (customer) parts.push(customer);
+
+  return `${parts.join("_")}.${ext}`;
+}
+
 export default function Home() {
   const [invoice, setInvoice] = useState<Invoice>(() => {
     const defaults: Invoice ={
@@ -232,7 +252,7 @@ export default function Home() {
         });
 
         const link = document.createElement("a");
-        link.download = `invoice-${invoice.date || "draft"}.png`;
+        link.download = buildFileName(invoice, "png");
         link.href = dataUrl;
         link.click();
       } catch (err) {
@@ -355,11 +375,11 @@ export default function Home() {
                             className="w-24 tabular-nums"
                             inputMode="numeric"
                             maxLength={4}
-                            placeholder="0001"
+                            placeholder="1001"
                             value={invSeqEditing ? invSeqDraft : currentSeqPadded}
                             onFocus={() => {
                               setInvSeqEditing(true);
-                              // start editing without leading zeros (easier)
+                              // start editing without leading zeros
                               setInvSeqDraft(String(extractSeq(invoice.invoiceNumber)));
                             }}
                             onChange={(e) => {
@@ -371,7 +391,7 @@ export default function Home() {
                               if (e.key === "Enter") {
                                 e.preventDefault();
                                 commitInvSeq();
-                                // optional: remove focus so it feels “saved”
+                                // remove focus so it feels “saved”
                                 (e.currentTarget as HTMLInputElement).blur();
                               }
                             }}

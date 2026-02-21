@@ -2,6 +2,7 @@ import type { Invoice } from "@/lib/invoice";
 import { calcTotal } from "@/lib/calc";
 import { formatRs } from "@/lib/format";
 import { totalToWordsRs } from "@/lib/total-words";
+import { BUSINESS } from "@/config/business";
 
 export function InvoicePaper({ invoice }: { invoice: Invoice }) {
   const { subtotal, discountAmount, total } = calcTotal(invoice.items, invoice.discount);
@@ -149,7 +150,7 @@ export function InvoicePaper({ invoice }: { invoice: Invoice }) {
       {/* Footer */}
       <div className="mt-auto pt-8 text-xs text-black/60">
         <div className="border-t border-black/10 pt-3 text-center">
-          Thank you for choosing Greenwood Furniture!
+          Thank you for choosing {BUSINESS.name}!
         </div>
       </div>
     </div>
